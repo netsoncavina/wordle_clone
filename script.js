@@ -6,6 +6,7 @@ const alertContainer = document.querySelector("[data-alert-container]");
 const keyBoard = document.querySelector("[data-keyboard]");
 const WORD_LENGTH = 5;
 const FLIP_ANIMATION_DURATION = 500;
+const DANCE_ANIMATION_DURATION = 500;
 const targetWord = words[Math.floor(Math.random() * words.length)];
 console.log(targetWord);
 startInteraction();
@@ -95,7 +96,7 @@ function submitGuess() {
 
 function flipTiles(tile, index, array, guess) {
   const letter = tile.dataset.letter;
-  const key = keyBoard.querySelector(`[data-key="${letter}"]`);
+  const key = keyBoard.querySelector(`[data-key="${letter}"i]`);
   setTimeout(() => {
     tile.classList.add("flip");
   }, (index * FLIP_ANIMATION_DURATION) / 2);
@@ -115,10 +116,14 @@ function flipTiles(tile, index, array, guess) {
   });
 
   if (index === array.length - 1) {
-    tile.addEventListener("transitionend", () => {
-      startInteraction();
-      // checkWinLose(guess,array)
-    });
+    tile.addEventListener(
+      "transitionend",
+      () => {
+        startInteraction();
+        checkWinLose(guess, array);
+      },
+      { once: true }
+    );
   }
 }
 
@@ -151,5 +156,37 @@ function shakeTiles(tiles) {
       },
       { once: true }
     );
+  });
+}
+
+function checkWinLose(guess, tiles) {
+  if (guess === targetWord) {
+    showAlert("You Win!", 5000);
+    danceTiles(tiles);
+    stopInteraction();
+    return;
+  }
+
+  const remainingTiles = guessGrid.querySelectorAll(":not([data-letter])");
+  if (remainingTiles.length === 0) {
+    showAlert("You Lose!", 5000);
+    showAlert(`Correct Word: ${targetWord.toUpperCase()}`, null);
+    stopInteraction();
+    return;
+  }
+}
+
+function danceTiles(tiles) {
+  tiles.forEach((tile, index) => {
+    setTimeout(() => {
+      tile.classList.add("dance");
+      tile.addEventListener(
+        "animationend",
+        () => {
+          tile.classList.remove("dance");
+        },
+        { once: true }
+      );
+    }, (index * DANCE_ANIMATION_DURATION) / 5);
   });
 }
